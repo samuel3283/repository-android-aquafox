@@ -31,6 +31,16 @@
      android:footerDividersEnabled="false"
      android:defaultFocusHighlightEnabled="true"
      />
--->
+
+
+ <ProgressBar
+     android:id="@+id/progressBarNotification"
+     android:progressDrawable="@drawable/progress1"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:layout_centerHorizontal="true"
+     android:layout_centerVertical="true"
+      />
+
  </LinearLayout>
 

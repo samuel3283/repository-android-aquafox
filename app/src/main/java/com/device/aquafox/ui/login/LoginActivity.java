@@ -1,35 +1,39 @@
 package com.device.aquafox.ui.login;
 
-import android.app.Activity;
-
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.device.aquafox.R;
-import com.device.aquafox.ui.login.LoginViewModel;
-import com.device.aquafox.ui.login.LoginViewModelFactory;
+import com.device.aquafox.data.ApiRequest;
+import com.device.aquafox.data.ApiResponse;
+import com.device.aquafox.data.Login;
+import com.device.aquafox.data.Session;
+
+import com.device.aquafox.service.APIClient;
+import com.device.aquafox.service.APIInterface;
+import com.device.aquafox.service.SaveSharedPreference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
     private LoginViewModel loginViewModel;
+    APIInterface apiInterface;
+    private ProgressBar spinner;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,11 +42,24 @@ public class LoginActivity extends AppCompatActivity {
         loginViewModel = ViewModelProviders.of(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);
 
+        apiInterface = APIClient.getClient().create(APIInterface.class);
         final EditText usernameEditText = findViewById(R.id.username);
         final EditText passwordEditText = findViewById(R.id.password);
         final Button loginButton = findViewById(R.id.login);
         //final ProgressBar loadingProgressBar = findViewById(R.id.loading);
+        spinner = (ProgressBar)findViewById(R.id.progressBarLogin);
+        spinner.setVisibility(View.GONE);
 
+        //VISIBLE: muestra   GONE: oculta
+        if(SaveSharedPreference.getLoggedStatus(getApplicationContext())) {
+            System.out.println("Login Load automatico:::"+SaveSharedPreference.getLoggedStatus(getApplicationContext()));
+            System.out.println(getApplicationContext().toString());
+
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
+
+        /*
         loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
             @Override
             public void onChanged(@Nullable LoginFormState loginFormState) {
@@ -58,6 +75,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+
 
         loginViewModel.getLoginResult().observe(this, new Observer<LoginResult>() {
             @Override
@@ -112,16 +130,77 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
         });
+*/
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+
+                boolean execute = true;
+                if(usernameEditText.getText() == null || usernameEditText.getText().toString().equals(""))  {
+                    execute = false;
+                    showMessage("Debe ingresar usuario.");
+                }
+                if(passwordEditText.getText() == null || passwordEditText.getText().toString().equals(""))  {
+                    execute = false;
+                    showMessage("Debe ingresar su contraseña..");
+                }
+
+                if(execute) {
+                    Login login = new Login();
+                    login.setEmail(usernameEditText.getText().toString());
+                    login.setPassword(passwordEditText.getText().toString());
+                    spinner.setVisibility(View.VISIBLE);
+
+                    Call<ApiResponse> call = apiInterface.getLogin(new ApiRequest(login));
+                    call.enqueue(new Callback<ApiResponse>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+
+                            System.out.println(response.body().getBody());
+                            if (response.body().getBody().getError() == null) {
+                                System.out.println("login OK::");
+                                ObjectMapper oMapper = new ObjectMapper();
+                                Session session = oMapper.convertValue(response.body().getBody().getBody(), Session.class);
+                                System.out.println("Session.token::" + session.getToken());
+
+                            /*
+                            SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                                    getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+                            SharedPreferences.Editor editor = sharedPref.edit();
+                            editor.putString(getString(R.string.token), session.getToken());
+                            editor.commit();
+                            */
+                                SaveSharedPreference.setLoggedIn(getApplicationContext(), true, session);
+
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                spinner.setVisibility(View.GONE);
+                            } else {
+                                System.out.println("login ERROR::");
+                                showMessage("Usuario y /o Contraseña incorrectos.");
+                                spinner.setVisibility(View.GONE);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse> call, Throwable t) {
+                            showMessage("Ocurrió un error, vuelva a itnentarlo.");
+                            spinner.setVisibility(View.GONE);
+                            call.cancel();
+                        }
+                    });
+
+                }
+
+
             }
         });
+
+
     }
+
 
     public void lanzar(View view) {
         Intent i = new Intent(this, MainActivity.class );
@@ -137,4 +216,9 @@ public class LoginActivity extends AppCompatActivity {
     private void showLoginFailed(@StringRes Integer errorString) {
         Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();
     }
+
+    private void showMessage(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
 }

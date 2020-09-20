@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorWhite">
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
         android:paddingLeft="60dp"
         android:paddingRight="60dp">
+
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,7 +33,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Email"
-                    android:textColorHint="#CED8F6"
+                    android:textColorHint="#208FFF"
                     android:layout_marginLeft="15dp"
                     android:background="#00000000"
                     android:letterSpacing="0.1"
@@ -56,7 +61,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Contraseña"
-                    android:textColorHint="#CED8F6"
+                    android:textColorHint="#208FFF"
                     android:layout_marginLeft="15dp"
                     android:background="#00000000"
                     android:inputType="textPassword"
@@ -113,7 +118,41 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/ibytes"
+            android:src="@drawable/aquafoxlogin"
             />
     </LinearLayout>
+
+    <!--
+    <ProgressBar
+        android:id="@+id/progressBarLogin"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="394dp"
+        android:layout_height="609dp"
+        android:layout_below="@+id/login"
+        android:layout_alignStart="@+id/password"
+        android:layout_alignLeft="@+id/password"
+        android:layout_alignRight="@+id/password"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="-539dp"
+        android:layout_marginRight="-59dp"
+        android:progressDrawable="@drawable/progress1"
+        tools:ignore="NotSibling" />
+-->
+    <ProgressBar
+        android:id="@+id/progressBarLogin"
+        android:progressDrawable="@drawable/progress1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        />
+    <!--
+    <ProgressBar
+        android:id="@+id/progressBarLogin"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true" />
+    -->
+
 </RelativeLayout>
